@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Text.RegularExpressions;
 using UrlShortenerAPI.Data;
+using UrlShortenerAPI.Helpers;
 using UrlShortenerAPI.Models;
 
 namespace UrlShortenerAPI.Controllers
@@ -17,11 +18,6 @@ namespace UrlShortenerAPI.Controllers
         public UrlController(ApiContext context)
         {
             _context = context;
-        }
-
-        private string SanitizeAlias(string alias)
-        {
-            return Regex.Replace(alias, @"[^a-zA-Z0-9\-_]", "")
         }
 
         // POST: api/url/shorten
@@ -39,16 +35,17 @@ namespace UrlShortenerAPI.Controllers
 
             string shortCode;
 
-            if ()
-            {
-
-            }
-
             if (!string.IsNullOrEmpty(request.CustomAlias))
             {
+                request.CustomAlias = InputSanitizer.SanitizeAlias(request.CustomAlias);
+
+                if (string.IsNullOrWhiteSpace(request.CustomAlias))
+                    return BadRequest("El alias contiene caracteres invalidos.");
+
                 bool exists = _context.Urls.Any(u => u.ShortCode == request.CustomAlias);
+
                 if (exists)
-                    return Conflict("El alias ya esta en uso. Elige otro.");
+                    return Conflict("EL alias ya esta en uso. Elige otro.");
 
                 shortCode = request.CustomAlias;
             }
