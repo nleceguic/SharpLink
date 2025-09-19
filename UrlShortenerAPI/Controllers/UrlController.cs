@@ -56,6 +56,12 @@ namespace UrlShortenerAPI.Controllers
                 shortCode = Guid.NewGuid().ToString("N")[..6];
             }
 
+            var shortUrl = $"{Request.Scheme}://{Request.Host}/{shortCode}";
+
+            string qrFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "qrcodes");
+            string qrFileName = shortCode;
+            string qrPath = QrCodeHelper.GenerateQrCode(shortUrl, qrFolder, qrFileName);
+
             var url = new Url
             {
                 LongUrl = sanitizedLongUrl,
@@ -63,13 +69,12 @@ namespace UrlShortenerAPI.Controllers
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = request.ExpiresAt,
                 IsActive = true,
-                Clicks = 0
+                Clicks = 0,
+                QrCodePath = $"/qrcodes/{qrFileName}.png"
             };
 
             _context.Urls.Add(url);
             _context.SaveChanges();
-
-            var shortUrl = $"{Request.Scheme}://{Request.Host}/{url.ShortCode}";
 
             return Ok(new
             {
@@ -77,7 +82,8 @@ namespace UrlShortenerAPI.Controllers
                 shortUrl = WebUtility.HtmlEncode(shortUrl),
                 createdAt = url.CreatedAt,
                 expiresAt = url.ExpiresAt,
-                isActive = url.IsActive
+                isActive = url.IsActive,
+                qrCodePath = url.QrCodePath
             });
         }
 
@@ -244,6 +250,37 @@ namespace UrlShortenerAPI.Controllers
             _context.SaveChanges();
 
             return Ok(new { message = $"URL con ID {id} eliminada correctamente." });
+        }
+
+        [HttpGet("expand/{shortCode}")]
+        public IActionResult Expand(string shortCode)
+        {
+            var url = _context.Urls.FirstOrDefault(u => u.ShortCode == shortCode);
+
+            if (url == null)
+                return NotFound(new { message = "No se ha encontrado una URL con esos datos." });
+
+            if (!url.IsActive)
+                return BadRequest(new { message = "Esta URL esta desactivada." });
+
+            if (url.ExpiresAt.HasValue && url.ExpiresAt < DateTime.UtcNow)
+                return BadRequest(new { message = "Esta URL ha expirado." });
+
+            return Ok(new
+            {
+                longUrl = url.LongUrl,
+                shortCode = url.ShortCode,
+                shortUrl = $"{Request.Scheme}://{Request.Host}/{url.ShortCode}",
+                createdAt = url.CreatedAt,
+                expiresAt = url.ExpiresAt,
+                lastAccessedAt = url.LastAccessedAt,
+                clicks = url.Clicks,
+                isActive = url.IsActive,
+                qrCodePath = url.QrCodePath,
+                status = url.ExpiresAt.HasValue && url.ExpiresAt < DateTime.UtcNow
+            ? "expirado"
+            : (url.IsActive ? "activo" : "inactivo")
+            });
         }
     }
 }
