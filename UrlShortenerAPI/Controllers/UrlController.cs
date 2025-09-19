@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
+using System.Net;
 using System.Text.RegularExpressions;
 using UrlShortenerAPI.Data;
 using UrlShortenerAPI.Helpers;
@@ -33,6 +34,8 @@ namespace UrlShortenerAPI.Controllers
                 return BadRequest("La URL no es válida. Debe comenzar con http:// o https://");
             }
 
+            string sanitizedLongUrl = InputSanitizer.SanitizeUrl(validatedUri.ToString());
+
             string shortCode;
 
             if (!string.IsNullOrEmpty(request.CustomAlias))
@@ -40,12 +43,11 @@ namespace UrlShortenerAPI.Controllers
                 request.CustomAlias = InputSanitizer.SanitizeAlias(request.CustomAlias);
 
                 if (string.IsNullOrWhiteSpace(request.CustomAlias))
-                    return BadRequest("El alias contiene caracteres invalidos.");
+                    return BadRequest("El alias contiene caracteres inválidos.");
 
                 bool exists = _context.Urls.Any(u => u.ShortCode == request.CustomAlias);
-
                 if (exists)
-                    return Conflict("EL alias ya esta en uso. Elige otro.");
+                    return Conflict("El alias ya está en uso. Elige otro.");
 
                 shortCode = request.CustomAlias;
             }
@@ -56,7 +58,7 @@ namespace UrlShortenerAPI.Controllers
 
             var url = new Url
             {
-                LongUrl = request.LongUrl,
+                LongUrl = sanitizedLongUrl,
                 ShortCode = shortCode,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = request.ExpiresAt,
@@ -71,11 +73,14 @@ namespace UrlShortenerAPI.Controllers
 
             return Ok(new
             {
-                originalUrl = url.LongUrl,
-                shortUrl = shortUrl,
-                createdAt = url.CreatedAt
+                originalUrl = WebUtility.HtmlEncode(url.LongUrl),
+                shortUrl = WebUtility.HtmlEncode(shortUrl),
+                createdAt = url.CreatedAt,
+                expiresAt = url.ExpiresAt,
+                isActive = url.IsActive
             });
         }
+
 
         // GET /{shortCode}
         [HttpGet("/{shortCode}")]
