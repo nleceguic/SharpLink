@@ -10,5 +10,6 @@
         public DateTime? ExpiresAt { get; set; }
         public DateTime? LastAccessedAt { get; set; }
         public int Clicks { get; set; }
+        public string? QrCodePath { get; set; }
     }
 }
