@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using UrlShortenerAPI.Data;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using HealthChecks.SqlServer;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,14 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueLimit = 2;
     });
 });
+
+builder.Services.AddHealthChecks()
+    .AddSqlServer(
+        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+        name: "UrlShortenerDB",
+        failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy,
+        tags: new[] { "db", "sql" });
+
 
 // Add services to the container.
 builder.Services.AddDbContext<ApiContext>
@@ -52,5 +61,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseStaticFiles();
+
+app.MapHealthChecks("/health");
 
 app.Run();
