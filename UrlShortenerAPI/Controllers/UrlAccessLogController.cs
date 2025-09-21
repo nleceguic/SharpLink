@@ -11,19 +11,27 @@ namespace UrlShortenerAPI.Controllers
     public class UrlAccessLogController : ControllerBase
     {
         private readonly ApiContext _context;
+        private readonly ILogger<UrlAccessLogController> _logger;
 
-        public UrlAccessLogController(ApiContext context)
+        public UrlAccessLogController(ApiContext context, ILogger<UrlAccessLogController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/url/urls/{id}/accesslogs?pageNumber=1&pageSize=10
         [HttpGet("urls/{id}/accesslogs")]
         public IActionResult GetAccessLogs(int id, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
+            _logger.LogInformation("Petición recibida para obtener logs de acceso de la URL con Id: {Id}. Página {PageNumber}, Tamaño {PageSize}",
+                id, pageNumber, pageSize);
+
             var url = _context.Urls.Find(id);
             if (url == null)
+            {
+                _logger.LogWarning("No se encontró ninguna URL con Id: {Id} al intentar recuperar los logs de acceso.", id);
                 return NotFound("URL no encontrada.");
+            }
 
 
             if (pageNumber < 1) pageNumber = 1;
@@ -62,6 +70,9 @@ namespace UrlShortenerAPI.Controllers
                 lastAccess,
                 logs
             };
+
+            _logger.LogInformation("Se devolvieron {Count} logs de acceso para la URL con Id {Id}. Total de logs: {TotalLogs}, Páginas: {TotalPages}",
+                logs.Count, id, totalLogs, result.totalPages);
 
             return Ok(result);
         }

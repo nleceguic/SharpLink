@@ -11,16 +11,20 @@ namespace UrlShortenerAPI.Controllers
     public class AnalyticsController : ControllerBase
     {
         private readonly ApiContext _context;
+        private readonly ILogger<AnalyticsController> _logger;
 
-        public AnalyticsController(ApiContext context)
+        public AnalyticsController(ApiContext context, ILogger<AnalyticsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/analytics/top
         [HttpGet("top")]
         public IActionResult GetTopUrls()
         {
+            _logger.LogInformation("Petición recibida para obtener el Top 10 de URLs más visitadas.");
+
             var topUrls = _context.Urls
                 .OrderByDescending(u => u.Clicks)
                 .Take(10)
@@ -34,6 +38,9 @@ namespace UrlShortenerAPI.Controllers
                 })
                 .ToList();
 
+            _logger.LogInformation("Se devolvieron {Count} URLs en el Top. Máximo de clics: {MaxClicks}",
+                topUrls.Count, topUrls.FirstOrDefault()?.Clicks ?? 0);
+
             return Ok(topUrls);
         }
 
@@ -41,13 +48,23 @@ namespace UrlShortenerAPI.Controllers
         [HttpGet("topByDate")]
         public IActionResult GetTopUrlsByDate([FromQuery] DateTime? fromDate = null, [FromQuery] DateTime? toDate = null)
         {
+            _logger.LogInformation("Petición recibida para obtener el Top 10 de URLs filtradas por fecha. Desde: {FromDate}, Hasta: {ToDate}",
+                fromDate?.ToString("yyyy-MM-dd") ?? "no especificado",
+                toDate?.ToString("yyyy-MM-dd") ?? "no especificado");
+
             var query = _context.UrlAccessLogs.AsQueryable();
 
             if (fromDate.HasValue)
+            {
+                _logger.LogDebug("Aplicando filtro desde fecha: {FromDate}", fromDate.Value);
                 query = query.Where(l => l.AccessedAt >= fromDate.Value);
+            }
 
             if (toDate.HasValue)
+            {
+                _logger.LogDebug("Aplicando filtro hasta fecha: {ToDate}", toDate.Value);
                 query = query.Where(l => l.AccessedAt <= toDate.Value);
+            }
 
             var topUrls = query
                 .GroupBy(l => l.UrlId)
@@ -71,6 +88,11 @@ namespace UrlShortenerAPI.Controllers
                         LastAccessedAt = url.LastAccessedAt
                     })
                 .ToList();
+
+            _logger.LogInformation("Se devolvieron {Count} URLs en el Top por fecha. Rango solicitado: {FromDate} a {ToDate}",
+                topUrls.Count,
+                fromDate?.ToString("yyyy-MM-dd") ?? "sin inicio",
+                toDate?.ToString("yyyy-MM-dd") ?? "sin fin");
 
             return Ok(topUrls);
         }
