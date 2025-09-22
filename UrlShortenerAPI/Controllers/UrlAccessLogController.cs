@@ -57,22 +57,24 @@ namespace UrlShortenerAPI.Controllers
             var firstAccess = _context.UrlAccessLogs.Where(l => l.UrlId == id).OrderBy(l => l.AccessedAt).Select(l => l.AccessedAt).FirstOrDefault();
             var lastAccess = logs.FirstOrDefault()?.AccessedAt;
 
-            var result = new
+            var result = new AccessLogResponseDto
             {
-                urlId = url.Id,
-                shortCode = url.ShortCode,
-                shortUrl = $"{Request.Scheme}://{Request.Host}/{url.ShortCode}",
-                pageNumber,
-                pageSize,
-                totalLogs,
-                totalPages = (int)Math.Ceiling((double)totalLogs / pageSize),
-                firstAccess,
-                lastAccess,
-                logs
+                UrlId = url.Id,
+                ShortCode = url.ShortCode,
+                ShortUrl = $"{Request.Scheme}://{Request.Host}/{url.ShortCode}",
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalLogs = totalLogs,
+                TotalPages = (int)Math.Ceiling((double)totalLogs / pageSize),
+                FirstAccess = firstAccess,
+                LastAccess = lastAccess,
+                Logs = logs
             };
 
+
+
             _logger.LogInformation("Se devolvieron {Count} logs de acceso para la URL con Id {Id}. Total de logs: {TotalLogs}, Páginas: {TotalPages}",
-                logs.Count, id, totalLogs, result.totalPages);
+                logs.Count, id, totalLogs, result.TotalPages);
 
             return Ok(result);
         }

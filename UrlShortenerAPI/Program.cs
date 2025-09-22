@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using UrlShortenerAPI.Data;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 using HealthChecks.SqlServer;
 using Serilog;
 
