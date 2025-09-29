@@ -117,7 +117,7 @@ Respuesta:
 
 ## 🧪 Tests
 
-🚧 Próximamente: añadir pruebas unitarias e integración para endpoints principales.
+🚧 Próximamente: añadire pruebas unitarias e integración para endpoints principales.
 
 ---
 
