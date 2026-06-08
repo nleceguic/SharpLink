@@ -117,7 +117,19 @@ Respuesta:
 
 ## 🧪 Tests
 
-🚧 Próximamente: añadire pruebas unitarias e integración para endpoints principales.
+El proyecto incluye pruebas unitarias para los principales endpoints y utilidades:
+
+- **UrlController** — creación, redirección, expansión, actualización, cambio de estado y eliminación de URLs.
+- **AnalyticsController** — top URLs globales y filtrado por rango de fechas.
+- **UrlAccessLogController** — consulta de logs de acceso con paginación.
+- **InputSanitizer** — sanitización de alias y URLs.
+- **QrCodeHelper** — generación de códigos QR como archivos PNG.
+
+Para ejecutar los tests:
+
+```bash
+dotnet test UrlShortenerAPI.Tests
+```
 
 ---
 
