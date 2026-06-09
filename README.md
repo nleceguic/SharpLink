@@ -1,5 +1,7 @@
 # 🔗 SharpLink
 
+[![CI](https://github.com/nleceguic/SharpLink/actions/workflows/ci.yml/badge.svg)](https://github.com/nleceguic/SharpLink/actions/workflows/ci.yml)
+
 SharpLink es un **acortador de URLs** escrito en **C#** con **SQL Server** como base de datos.  
 Permite generar enlaces cortos, redirigir a los destinos originales y registrar estadísticas de uso.
 
