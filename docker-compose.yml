@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "SharpLink!Pass2024"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./init.sql:/init.sql:ro
+      - ./docker/mssql-init.sh:/mssql-init.sh
+    entrypoint: ["/bin/bash", "/mssql-init.sh"]
+    healthcheck:
+      test: [
+        "CMD", "/opt/mssql-tools18/bin/sqlcmd",
+        "-S", "localhost", "-U", "SA", "-P", "SharpLink!Pass2024",
+        "-Q", "SELECT 1", "-C"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db,1433;Database=UrlShortenerDB;User Id=SA;Password=SharpLink!Pass2024;TrustServerCertificate=True;
+    volumes:
+      - qrcodes:/app/wwwroot/qrcodes
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  sqlserver_data:
+  qrcodes:

@@ -1,0 +1,8 @@
+.git
+docs
+UrlShortenerAPI.Tests
+*.md
+.gitignore
+.gitattributes
+**/bin
+**/obj

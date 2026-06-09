@@ -133,9 +133,33 @@ dotnet test UrlShortenerAPI.Tests
 
 ---
 
-## 🐳 Despliegue con Docker (pendiente)
+## 🐳 Despliegue con Docker
 
-🚧 Próximamente: `Dockerfile` y `docker-compose.yml` para levantar API + DB.
+Levanta la API y SQL Server con un solo comando:
+
+```bash
+docker-compose up --build
+```
+
+Esto arranca dos contenedores:
+- **db** — SQL Server 2022 Express, inicializa la base de datos automáticamente con `init.sql` en el primer arranque.
+- **api** — La API en .NET 8, disponible en `http://localhost:8080`.
+
+Swagger estará disponible en `http://localhost:8080/swagger`.
+
+Para detener y eliminar los contenedores:
+
+```bash
+docker-compose down
+```
+
+Para eliminar también los volúmenes de datos:
+
+```bash
+docker-compose down -v
+```
+
+> **Nota:** la contraseña de SA por defecto es `SharpLink!Pass2024`. Cámbiala en `docker-compose.yml` antes de desplegar en un entorno expuesto.
 
 ---
 
