@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UrlShortenerAPI.Models;
 using UrlShortenerAPI.Data;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace UrlShortenerAPI.Controllers
 {
@@ -53,7 +52,6 @@ namespace UrlShortenerAPI.Controllers
                 })
                 .ToList();
 
-            var totalClicks = logs.Count > 0 ? logs.Count : 0;
             var firstAccess = _context.UrlAccessLogs.Where(l => l.UrlId == id).OrderBy(l => l.AccessedAt).Select(l => l.AccessedAt).FirstOrDefault();
             var lastAccess = logs.FirstOrDefault()?.AccessedAt;
 

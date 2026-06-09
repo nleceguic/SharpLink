@@ -1,10 +1,7 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Net;
-using System.Text.RegularExpressions;
 using UrlShortenerAPI.Data;
 using UrlShortenerAPI.Helpers;
 using UrlShortenerAPI.Models;
