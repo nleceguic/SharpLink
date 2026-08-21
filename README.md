@@ -384,8 +384,8 @@ Devuelve el historial de accesos de un enlace con paginación, ordenados del má
 
 ---
 
-![Postman - Crear enlace corto](docs/postman-shorten.png)
-![Postman - Consultar estadísticas](docs/postman-stats.png)
+![Swagger - Crear enlace corto](docs/swagger-shorten.png)
+![Swagger - Consultar estadísticas](docs/swagger-stats.png)
 
 ---
 
