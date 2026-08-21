@@ -1,9 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY UrlShortenerAPI.sln .
 COPY UrlShortenerAPI/UrlShortenerAPI.csproj UrlShortenerAPI/
-RUN dotnet restore
+RUN dotnet restore UrlShortenerAPI/UrlShortenerAPI.csproj
 
 COPY UrlShortenerAPI/ UrlShortenerAPI/
 RUN dotnet publish UrlShortenerAPI/UrlShortenerAPI.csproj -c Release -o /app/publish
