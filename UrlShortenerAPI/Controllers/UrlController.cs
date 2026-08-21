@@ -122,7 +122,7 @@ namespace UrlShortenerAPI.Controllers
             var accessLog = new UrlAccessLog
             {
                 UrlId = url.Id,
-                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 UserAgent = Request.Headers["User-Agent"].ToString()
             };
 
@@ -184,7 +184,7 @@ namespace UrlShortenerAPI.Controllers
                 createdAt = url.CreatedAt,
                 lastAccessedAt = url.LastAccessedAt,
                 expiresAt = url.ExpiresAt,
-                isActive = true,
+                isActive = url.IsActive,
             });
         }
 
@@ -213,7 +213,7 @@ namespace UrlShortenerAPI.Controllers
                     createdAt = u.CreatedAt,
                     lastAccessedAt = u.LastAccessedAt,
                     expiresAt = u.ExpiresAt,
-                    isActive = true
+                    isActive = u.IsActive
                 })
                 .ToList();
 

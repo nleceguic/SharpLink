@@ -52,7 +52,7 @@ namespace UrlShortenerAPI.Controllers
                 })
                 .ToList();
 
-            var firstAccess = _context.UrlAccessLogs.Where(l => l.UrlId == id).OrderBy(l => l.AccessedAt).Select(l => l.AccessedAt).FirstOrDefault();
+            var firstAccess = _context.UrlAccessLogs.Where(l => l.UrlId == id).OrderBy(l => l.AccessedAt).Select(l => (DateTime?)l.AccessedAt).FirstOrDefault();
             var lastAccess = logs.FirstOrDefault()?.AccessedAt;
 
             var result = new AccessLogResponseDto

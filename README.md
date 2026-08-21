@@ -397,19 +397,32 @@ Devuelve el historial de accesos de un enlace con paginación, ordenados del má
 
 ## 🧪 Tests
 
-El proyecto incluye pruebas unitarias para los principales endpoints y utilidades:
+El proyecto incluye una suite de **74 tests** (xUnit + FluentAssertions + Moq) que combina tests unitarios de controladores/utilidades con tests de integración sobre el pipeline HTTP real:
 
-- **UrlController** — creación, redirección, expansión, actualización, cambio de estado y eliminación de URLs.
-- **AnalyticsController** — top URLs globales y filtrado por rango de fechas.
-- **UrlAccessLogController** — consulta de logs de acceso con paginación.
-- **InputSanitizer** — sanitización de alias y URLs.
-- **QrCodeHelper** — generación de códigos QR como archivos PNG.
+- **UrlController** (unitarios, EF Core InMemory) — creación con URL válida/vacía/inválida/con esquema no-http, alias personalizado (éxito, caracteres inválidos, duplicado), redirección (incluye expiración e inactividad), obtención por Id, listado paginado, actualización, cambio de estado, eliminación y expansión de código corto — incluyendo casos límite (paginación con parámetros inválidos, enlaces expirados/inactivos, generación de códigos únicos).
+- **AnalyticsController** (unitarios) — top 10 global, top por rango de fechas (con ambas fechas, solo una, o ninguna) y casos sin datos.
+- **UrlAccessLogController** (unitarios) — consulta de logs con paginación, normalización de parámetros inválidos y URLs sin accesos registrados.
+- **InputSanitizer** (unitarios) — sanitización de alias y URLs frente a espacios, caracteres no ASCII, emojis y valores nulos/vacíos.
+- **QrCodeHelper** (unitarios) — generación de archivos PNG válidos, creación de carpetas y contenido no vacío.
+- **Integración** (`WebApplicationFactory<Program>`, en `UrlShortenerAPI.Tests/Integration`) — ejercitan la app real de extremo a extremo (HTTP → routing → controlador → EF Core → respuesta HTTP) contra una base de datos InMemory: creación de enlace vía POST, redirección con código de estado y cabecera `Location` reales, y flujos de error (404, 400).
+
+Los tests están escritos para verificar comportamiento real, no para inflar la cobertura: no hay tests sobre getters/setters, DTOs planos o configuración sin lógica.
+
+**Cobertura obtenida** (`dotnet test --collect:"XPlat Code Coverage"`, medida el 2026-08-21): **99.8% de líneas** (461/462) y **94% de ramas** (94/100) sobre todo el proyecto `UrlShortenerAPI`. La única línea sin cubrir es una propiedad de navegación de EF Core (`UrlAccessLog.url`) que el código no usa. La lógica de negocio de los tres controladores está cubierta al 100% en líneas.
 
 Para ejecutar los tests:
 
 ```bash
 dotnet test UrlShortenerAPI.Tests
 ```
+
+Para generar el informe de cobertura:
+
+```bash
+dotnet test UrlShortenerAPI.Tests --collect:"XPlat Code Coverage"
+```
+
+Esto genera un `coverage.cobertura.xml` en `UrlShortenerAPI.Tests/TestResults/<guid>/`, que puede visualizarse con herramientas como [ReportGenerator](https://github.com/danielpalme/ReportGenerator).
 
 ---
 

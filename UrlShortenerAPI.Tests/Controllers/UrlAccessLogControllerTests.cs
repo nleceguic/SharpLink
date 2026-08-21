@@ -80,5 +80,47 @@ namespace UrlShortenerAPI.Tests.Controllers
             Assert.Equal(3, value.TotalLogs);
             Assert.Equal(3, value.TotalPages);
         }
+
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(-1, -5)]
+        public void GetAccessLogs_ShouldNormalizeInvalidPagingParams(int pageNumber, int pageSize)
+        {
+            var context = GetInMemoryContext();
+            var controller = new UrlAccessLogController(context, NullLogger<UrlAccessLogController>.Instance);
+            controller.ControllerContext.HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+
+            var result = controller.GetAccessLogs(1, pageNumber, pageSize);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var value = Assert.IsType<AccessLogResponseDto>(okResult.Value);
+
+            Assert.Equal(1, value.PageNumber);
+            Assert.Equal(10, value.PageSize);
+        }
+
+        [Fact]
+        public void GetAccessLogs_ReturnsEmptyLogs_WhenUrlHasNeverBeenAccessed()
+        {
+            var options = new DbContextOptionsBuilder<ApiContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+            var context = new ApiContext(options);
+            context.Urls.Add(new Url { Id = 1, ShortCode = "fresh", LongUrl = "https://example.com" });
+            context.SaveChanges();
+
+            var controller = new UrlAccessLogController(context, NullLogger<UrlAccessLogController>.Instance);
+            controller.ControllerContext.HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+
+            var result = controller.GetAccessLogs(1);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var value = Assert.IsType<AccessLogResponseDto>(okResult.Value);
+
+            Assert.Empty(value.Logs);
+            Assert.Equal(0, value.TotalLogs);
+            Assert.Null(value.FirstAccess);
+            Assert.Null(value.LastAccess);
+        }
     }
 }

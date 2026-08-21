@@ -114,6 +114,63 @@ namespace UrlShortenerAPI.Tests.Controllers
         }
 
         [Fact]
+        public void GetTopUrls_ShouldReturnEmptyList_WhenNoUrlsExist()
+        {
+            using var context = GetInMemoryContext("TopUrlsEmptyDb");
+            var controller = GetController(context);
+
+            var result = controller.GetTopUrls() as OkObjectResult;
+
+            result.Should().NotBeNull();
+            var list = result.Value as List<TopUrlDto>;
+            list.Should().NotBeNull();
+            list.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetTopUrlsByDate_ShouldOnlyApplyFromDate_WhenToDateIsNotProvided()
+        {
+            using var context = GetInMemoryContext("TopUrlsFromDateOnlyDb");
+
+            context.Urls.Add(new Url { Id = 1, ShortCode = "a1", LongUrl = "https://a.com", CreatedAt = DateTime.UtcNow });
+            context.UrlAccessLogs.AddRange(
+                new UrlAccessLog { UrlId = 1, AccessedAt = DateTime.UtcNow.AddDays(-1), IpAddress = "1.1.1.1", UserAgent = "UA1" },
+                new UrlAccessLog { UrlId = 1, AccessedAt = DateTime.UtcNow.AddDays(-10), IpAddress = "1.1.1.1", UserAgent = "UA1" }
+            );
+            context.SaveChanges();
+
+            var controller = GetController(context);
+            var result = controller.GetTopUrlsByDate(fromDate: DateTime.UtcNow.AddDays(-3), toDate: null) as OkObjectResult;
+
+            result.Should().NotBeNull();
+            var list = result.Value as List<TopUrlDto>;
+            list.Should().NotBeNull();
+            list.Should().ContainSingle();
+            list!.First().Clicks.Should().Be(1);
+        }
+
+        [Fact]
+        public void GetTopUrlsByDate_ShouldReturnGlobalTop_WhenNoDatesProvided()
+        {
+            using var context = GetInMemoryContext("TopUrlsNoDatesDb");
+
+            context.Urls.Add(new Url { Id = 1, ShortCode = "a1", LongUrl = "https://a.com", CreatedAt = DateTime.UtcNow });
+            context.UrlAccessLogs.AddRange(
+                new UrlAccessLog { UrlId = 1, AccessedAt = DateTime.UtcNow.AddDays(-1), IpAddress = "1.1.1.1", UserAgent = "UA1" },
+                new UrlAccessLog { UrlId = 1, AccessedAt = DateTime.UtcNow.AddDays(-30), IpAddress = "1.1.1.1", UserAgent = "UA1" }
+            );
+            context.SaveChanges();
+
+            var controller = GetController(context);
+            var result = controller.GetTopUrlsByDate(fromDate: null, toDate: null) as OkObjectResult;
+
+            result.Should().NotBeNull();
+            var list = result.Value as List<TopUrlDto>;
+            list.Should().NotBeNull();
+            list!.First().Clicks.Should().Be(2);
+        }
+
+        [Fact]
         public void GetTopUrlsByDate_ShouldReturnEmptyList_WhenNoLogsInRange()
         {
             using var context = GetInMemoryContext("TopUrlsByDateEmptyDb");
